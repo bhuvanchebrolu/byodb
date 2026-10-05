@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"byodb/ql"
@@ -17,9 +18,12 @@ import (
 var appHTML []byte
 
 type Server struct {
-	db   *relational.DB
-	path string
-	port int
+	db       *relational.DB
+	path     string
+	port     int
+	activeTx *relational.DBTX
+	inTx     bool
+	txMutex  sync.Mutex
 }
 
 func NewServer(db *relational.DB, path string, port int) *Server {
@@ -38,21 +42,29 @@ type QueryResponse struct {
 	Columns  []string   `json:"columns,omitempty"`
 	Rows     [][]string `json:"rows,omitempty"`
 	Affected int64      `json:"affected"`
+	InTx     bool       `json:"in_tx"`
 	Error    string     `json:"error,omitempty"`
 }
 
-func (s *Server) Start() error {
+func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.handleIndex)
 	mux.HandleFunc("/api/tables", s.handleTables)
 	mux.HandleFunc("/api/query", s.handleQuery)
 	mux.HandleFunc("/api/stats", s.handleStats)
+	return mux
+}
 
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.Handler().ServeHTTP(w, r)
+}
+
+func (s *Server) Start() error {
 	addr := fmt.Sprintf(":%d", s.port)
 	fmt.Printf("\n🚀 BYODB Web Workbench is running at http://localhost:%d\n", s.port)
 	fmt.Printf("Press Ctrl+C to stop the web server.\n\n")
 
-	return http.ListenAndServe(addr, mux)
+	return http.ListenAndServe(addr, s.Handler())
 }
 
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
@@ -67,9 +79,13 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleTables(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	s.txMutex.Lock()
+	defer s.txMutex.Unlock()
+
 	var tableDefs []*relational.TableDef
 	var views []map[string]string
-	err := s.db.View(func(tx *relational.DBTX) error {
+
+	fetchData := func(tx *relational.DBTX) error {
 		names, err := tx.TableList()
 		if err != nil {
 			return err
@@ -86,14 +102,25 @@ func (s *Server) handleTables(w http.ResponseWriter, r *http.Request) {
 			views = append(views, map[string]string{"name": vn, "query": q})
 		}
 		return nil
-	})
+	}
+
+	var err error
+	if s.inTx && s.activeTx != nil {
+		err = fetchData(s.activeTx)
+	} else {
+		err = s.db.View(fetchData)
+	}
 
 	if err != nil {
 		json.NewEncoder(w).Encode(map[string]any{"error": err.Error()})
 		return
 	}
 
-	json.NewEncoder(w).Encode(map[string]any{"tables": tableDefs, "views": views})
+	json.NewEncoder(w).Encode(map[string]any{
+		"tables": tableDefs,
+		"views":  views,
+		"in_tx":  s.inTx,
+	})
 }
 
 func (s *Server) handleQuery(w http.ResponseWriter, r *http.Request) {
@@ -105,22 +132,27 @@ func (s *Server) handleQuery(w http.ResponseWriter, r *http.Request) {
 
 	var req QueryRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		json.NewEncoder(w).Encode(QueryResponse{Error: "invalid JSON body"})
+		json.NewEncoder(w).Encode(QueryResponse{Error: "invalid JSON body", InTx: s.inTx})
 		return
 	}
 
+	s.txMutex.Lock()
+	defer s.txMutex.Unlock()
+
 	rawQueries := strings.Split(req.Query, ";")
 	var lastResp QueryResponse
+	var localTx *relational.DBTX
 
-	var tx relational.DBTX
-	s.db.Begin(&tx)
-	committedOrAborted := false
-
-	defer func() {
-		if !committedOrAborted {
-			s.db.Commit(&tx)
+	getTx := func() *relational.DBTX {
+		if s.inTx && s.activeTx != nil {
+			return s.activeTx
 		}
-	}()
+		if localTx == nil {
+			localTx = &relational.DBTX{}
+			s.db.Begin(localTx)
+		}
+		return localTx
+	}
 
 	for _, qStr := range rawQueries {
 		qStr = strings.TrimSpace(qStr)
@@ -130,48 +162,97 @@ func (s *Server) handleQuery(w http.ResponseWriter, r *http.Request) {
 
 		stmt, err := ql.Parse(qStr)
 		if err != nil {
-			s.db.Abort(&tx)
-			committedOrAborted = true
-			json.NewEncoder(w).Encode(QueryResponse{Error: err.Error()})
+			if s.inTx && s.activeTx != nil {
+				s.db.Abort(s.activeTx)
+				s.activeTx = nil
+				s.inTx = false
+			} else if localTx != nil {
+				s.db.Abort(localTx)
+				localTx = nil
+			}
+			json.NewEncoder(w).Encode(QueryResponse{Error: err.Error(), InTx: s.inTx})
 			return
 		}
 
 		switch stmt.(type) {
 		case *ql.BeginStmt:
-			continue
-		case *ql.CommitStmt:
-			err := s.db.Commit(&tx)
-			if err != nil {
-				committedOrAborted = true
-				json.NewEncoder(w).Encode(QueryResponse{Error: err.Error()})
-				return
+			if !s.inTx {
+				if localTx != nil {
+					s.activeTx = localTx
+					localTx = nil
+				} else {
+					s.activeTx = &relational.DBTX{}
+					s.db.Begin(s.activeTx)
+				}
+				s.inTx = true
 			}
-			s.db.Begin(&tx)
+			lastResp = QueryResponse{Affected: 0, InTx: s.inTx}
 			continue
+
+		case *ql.CommitStmt:
+			if s.inTx && s.activeTx != nil {
+				err := s.db.Commit(s.activeTx)
+				s.activeTx = nil
+				s.inTx = false
+				if err != nil {
+					json.NewEncoder(w).Encode(QueryResponse{Error: err.Error(), InTx: s.inTx})
+					return
+				}
+			} else if localTx != nil {
+				err := s.db.Commit(localTx)
+				localTx = nil
+				if err != nil {
+					json.NewEncoder(w).Encode(QueryResponse{Error: err.Error(), InTx: s.inTx})
+					return
+				}
+			}
+			lastResp = QueryResponse{Affected: 0, InTx: s.inTx}
+			continue
+
 		case *ql.RollbackStmt:
-			s.db.Abort(&tx)
-			s.db.Begin(&tx)
-			lastResp = QueryResponse{Affected: 0}
+			if s.inTx && s.activeTx != nil {
+				s.db.Abort(s.activeTx)
+				s.activeTx = nil
+				s.inTx = false
+			} else if localTx != nil {
+				s.db.Abort(localTx)
+				localTx = nil
+			}
+			lastResp = QueryResponse{Affected: 0, InTx: s.inTx}
 			continue
 		}
 
-		res, err := ql.Execute(&tx, stmt)
+		currentTx := getTx()
+		res, err := ql.Execute(currentTx, stmt)
 		if err != nil {
-			s.db.Abort(&tx)
-			committedOrAborted = true
-			json.NewEncoder(w).Encode(QueryResponse{Error: err.Error()})
+			if s.inTx && s.activeTx != nil {
+				s.db.Abort(s.activeTx)
+				s.activeTx = nil
+				s.inTx = false
+			} else if localTx != nil {
+				s.db.Abort(localTx)
+				localTx = nil
+			}
+			json.NewEncoder(w).Encode(QueryResponse{Error: err.Error(), InTx: s.inTx})
 			return
 		}
 
 		var resp QueryResponse
+		resp.InTx = s.inTx
 		if res.Rows != nil {
 			resp.Columns = res.Names
 			for res.Rows.Valid() {
 				var rec relational.Record
 				if err := res.Rows.Deref(&rec); err != nil {
-					s.db.Abort(&tx)
-					committedOrAborted = true
-					json.NewEncoder(w).Encode(QueryResponse{Error: err.Error()})
+					if s.inTx && s.activeTx != nil {
+						s.db.Abort(s.activeTx)
+						s.activeTx = nil
+						s.inTx = false
+					} else if localTx != nil {
+						s.db.Abort(localTx)
+						localTx = nil
+					}
+					json.NewEncoder(w).Encode(QueryResponse{Error: err.Error(), InTx: s.inTx})
 					return
 				}
 				var rowStr []string
@@ -187,6 +268,12 @@ func (s *Server) handleQuery(w http.ResponseWriter, r *http.Request) {
 		lastResp = resp
 	}
 
+	if !s.inTx && localTx != nil {
+		s.db.Commit(localTx)
+		localTx = nil
+	}
+
+	lastResp.InTx = s.inTx
 	json.NewEncoder(w).Encode(lastResp)
 }
 
@@ -206,8 +293,10 @@ func (s *Server) handleStats(w http.ResponseWriter, r *http.Request) {
 		"fileSizeBytes": size,
 		"pageCount":     pageCount,
 		"pageSize":      4096,
+		"in_tx":         s.inTx,
 		"timestamp":     time.Now().Format(time.RFC3339),
 	}
 
 	json.NewEncoder(w).Encode(stats)
 }
+

@@ -3,25 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BYODB - Database Workbench</title>
+  <title>BYODB Workbench</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-main: #090d16;
-      --bg-card: rgba(18, 26, 43, 0.75);
-      --bg-card-hover: rgba(26, 38, 62, 0.85);
-      --border-color: rgba(255, 255, 255, 0.08);
-      --border-accent: rgba(56, 189, 248, 0.3);
-      --text-main: #f1f5f9;
-      --text-muted: #94a3b8;
-      --accent-cyan: #38bdf8;
-      --accent-emerald: #34d399;
-      --accent-purple: #c084fc;
-      --accent-rose: #fb7185;
+      --bg-main: #09090b;
+      --bg-panel: #121215;
+      --bg-hover: #1c1c21;
+      --border: #27272a;
+      --border-focus: #52525b;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --accent-blue: #3b82f6;
+      --accent-green: #22c55e;
+      --accent-red: #ef4444;
       --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-title: 'Outfit', sans-serif;
       --font-code: 'Fira Code', monospace;
     }
 
@@ -29,9 +27,6 @@
 
     body {
       background-color: var(--bg-main);
-      background-image: 
-        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(192, 132, 252, 0.1) 0px, transparent 50%);
       color: var(--text-main);
       font-family: var(--font-main);
       height: 100vh;
@@ -42,85 +37,54 @@
 
     /* Header */
     header {
-      height: 60px;
-      border-bottom: 1px solid var(--border-color);
-      background: rgba(9, 13, 22, 0.8);
-      backdrop-filter: blur(12px);
+      height: 50px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 24px;
-      z-index: 10;
+      padding: 0 16px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
-    }
-
-    .logo-badge {
-      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
-      color: #090d16;
-      font-family: var(--font-title);
-      font-weight: 700;
-      font-size: 16px;
-      padding: 6px 12px;
-      border-radius: 8px;
-      letter-spacing: 0.5px;
-      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+      gap: 10px;
     }
 
     .brand-title {
-      font-family: var(--font-title);
-      font-size: 18px;
+      font-size: 15px;
       font-weight: 600;
-      color: var(--text-main);
+      letter-spacing: 0.3px;
     }
 
     .header-info {
       display: flex;
       align-items: center;
-      gap: 16px;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: var(--accent-emerald);
-      background: rgba(52, 211, 153, 0.1);
-      border: 1px solid rgba(52, 211, 153, 0.2);
-      padding: 4px 12px;
-      border-radius: 20px;
-    }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background-color: var(--accent-emerald);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--accent-emerald);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.85); }
+      gap: 12px;
     }
 
     .db-path {
       font-family: var(--font-code);
       font-size: 12px;
       color: var(--text-muted);
-      background: rgba(255, 255, 255, 0.04);
-      padding: 4px 10px;
-      border-radius: 6px;
-      border: 1px solid var(--border-color);
+      background: var(--bg-main);
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
     }
 
-    /* Main Container */
+    .status-badge {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      color: var(--accent-green);
+      background: rgba(34, 197, 94, 0.08);
+      font-family: var(--font-code);
+    }
+
+    /* Layout */
     .app-container {
       display: flex;
       flex: 1;
@@ -129,284 +93,260 @@
 
     /* Sidebar */
     aside {
-      width: 300px;
-      border-right: 1px solid var(--border-color);
-      background: rgba(13, 19, 33, 0.6);
-      backdrop-filter: blur(12px);
+      width: 280px;
+      border-right: 1px solid var(--border);
+      background: var(--bg-panel);
       display: flex;
       flex-direction: column;
     }
 
     .sidebar-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border-color);
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
     .sidebar-title {
-      font-size: 13px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      font-size: 12px;
       font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       color: var(--text-muted);
     }
 
-    .btn-icon {
+    .btn-text {
       background: transparent;
-      border: 1px solid var(--border-color);
+      border: 1px solid var(--border);
       color: var(--text-muted);
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 4px;
       cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
     }
 
-    .btn-icon:hover {
-      background: rgba(255, 255, 255, 0.08);
+    .btn-text:hover {
+      background: var(--bg-hover);
       color: var(--text-main);
-      border-color: var(--accent-cyan);
-    }
-
-    .table-list {
-      flex: 1;
-      overflow-y: auto;
-      padding: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      border-color: var(--border-focus);
     }
 
     .schema-search-container {
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
     }
 
     .schema-search {
       width: 100%;
-      background: rgba(9, 13, 22, 0.7);
-      border: 1px solid var(--border-color);
+      background: var(--bg-main);
+      border: 1px solid var(--border);
       color: var(--text-main);
-      padding: 6px 12px;
-      border-radius: 6px;
+      padding: 6px 10px;
+      border-radius: 4px;
       font-size: 12px;
       outline: none;
       font-family: var(--font-main);
     }
 
     .schema-search:focus {
-      border-color: var(--accent-cyan);
+      border-color: var(--border-focus);
+    }
+
+    .table-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .table-item {
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      background: rgba(18, 26, 43, 0.4);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-main);
       overflow: hidden;
-      transition: all 0.2s ease;
-    }
-
-    .table-item:hover {
-      border-color: var(--border-accent);
-      background: rgba(18, 26, 43, 0.8);
     }
 
     .table-name-row {
-      padding: 10px 12px;
+      padding: 8px 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(255, 255, 255, 0.03);
-      border-bottom: 1px solid var(--border-color);
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
     }
 
     .table-name-title {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       cursor: pointer;
-      font-size: 13px;
-      user-select: none;
+      font-size: 12px;
+      font-weight: 500;
     }
 
     .table-name-title:hover {
-      color: var(--accent-cyan);
+      color: var(--accent-blue);
     }
 
     .col-badge {
       font-size: 10px;
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--accent-cyan);
-      padding: 2px 6px;
-      border-radius: 10px;
-    }
-
-    .btn-xs {
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      color: var(--accent-cyan);
-      font-size: 10px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .btn-xs:hover {
-      background: var(--accent-cyan);
-      color: #090d16;
+      color: var(--text-muted);
     }
 
     .col-list {
-      padding: 10px 14px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
     }
 
     .col-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 12px;
+      font-size: 11px;
       font-family: var(--font-code);
       color: var(--text-muted);
+    }
+
+    .col-name {
+      color: var(--text-main);
     }
 
     .col-type {
       font-size: 10px;
-      padding: 2px 6px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.06);
-      text-transform: uppercase;
-      color: var(--accent-cyan);
+      color: var(--text-muted);
     }
 
-    .col-pk {
-      color: var(--accent-emerald);
-      font-weight: bold;
-    }
-
-    .col-idx {
-      color: var(--accent-purple);
+    .col-tag {
+      font-size: 9px;
+      padding: 1px 4px;
+      border-radius: 2px;
+      background: var(--border);
+      color: var(--text-main);
+      margin-left: 4px;
     }
 
     .index-meta {
-      font-size: 11px;
+      font-size: 10px;
       font-family: var(--font-code);
       color: var(--text-muted);
-      padding-top: 6px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.08);
+      padding-top: 4px;
+      border-top: 1px dashed var(--border);
       margin-top: 4px;
     }
 
-    /* Workspace Panel */
+    /* Main Area */
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      padding: 20px;
-      gap: 20px;
+      padding: 14px;
+      gap: 14px;
     }
 
-    /* Query Editor Card */
     .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
     .editor-card {
-      height: 240px;
-      min-height: 180px;
+      height: 220px;
+      min-height: 160px;
     }
 
     .card-header {
-      padding: 12px 20px;
-      background: rgba(255, 255, 255, 0.02);
-      border-bottom: 1px solid var(--border-color);
+      padding: 10px 14px;
+      background: var(--bg-main);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
     .card-title {
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
     }
 
     .editor-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
     }
 
     select.snippet-select {
-      background: rgba(13, 19, 33, 0.9);
+      background: var(--bg-panel);
       color: var(--text-main);
-      border: 1px solid var(--border-color);
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 13px;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
       outline: none;
       cursor: pointer;
     }
 
-    select.snippet-select:hover {
-      border-color: var(--accent-cyan);
+    select.snippet-select:focus {
+      border-color: var(--border-focus);
+    }
+
+    .btn-action {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-family: var(--font-main);
+      cursor: pointer;
+    }
+
+    .btn-action:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-focus);
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--accent-cyan), #0284c7);
-      color: #fff;
-      border: none;
-      padding: 8px 18px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: 13px;
+      background: var(--accent-blue);
+      color: #ffffff;
+      border: 1px solid var(--accent-blue);
+      padding: 4px 14px;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 12px;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
-      transition: all 0.2s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
     }
 
     .btn-primary:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
+      background: #2563eb;
     }
 
     .query-textarea {
       flex: 1;
       width: 100%;
-      background: rgba(9, 13, 22, 0.6);
+      background: var(--bg-main);
       border: none;
-      color: #e2e8f0;
+      color: var(--text-main);
       font-family: var(--font-code);
-      font-size: 14px;
-      padding: 16px 20px;
+      font-size: 13px;
+      padding: 12px 14px;
       resize: none;
       outline: none;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
-    /* Results Section */
+    /* Results */
     .results-card {
       flex: 1;
       display: flex;
@@ -417,88 +357,80 @@
     .results-meta {
       display: flex;
       align-items: center;
-      gap: 16px;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .meta-pill {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--border-color);
-      padding: 2px 10px;
-      border-radius: 12px;
+      gap: 12px;
+      font-size: 11px;
       font-family: var(--font-code);
+      color: var(--text-muted);
     }
 
     .results-body {
       flex: 1;
       overflow: auto;
-      padding: 0;
+      background: var(--bg-main);
     }
 
     table.data-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12px;
+      font-family: var(--font-code);
       text-align: left;
     }
 
     table.data-table th {
-      background: rgba(18, 26, 43, 0.95);
+      background: var(--bg-panel);
       position: sticky;
       top: 0;
-      padding: 12px 18px;
-      font-weight: 600;
-      color: var(--accent-cyan);
-      border-bottom: 1px solid var(--border-color);
-      font-family: var(--font-code);
-      font-size: 12px;
+      padding: 8px 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
       text-transform: uppercase;
+      font-size: 11px;
     }
 
     table.data-table td {
-      padding: 10px 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-      font-family: var(--font-code);
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
       color: var(--text-main);
     }
 
     table.data-table tr:hover td {
-      background: rgba(56, 189, 248, 0.04);
+      background: var(--bg-hover);
     }
 
     .empty-results {
-      padding: 40px;
+      padding: 30px;
       text-align: center;
       color: var(--text-muted);
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .error-box {
-      margin: 16px;
-      padding: 14px 18px;
-      background: rgba(251, 113, 133, 0.1);
-      border: 1px solid rgba(251, 113, 133, 0.3);
-      border-radius: 8px;
-      color: var(--accent-rose);
+      margin: 12px;
+      padding: 10px 14px;
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid var(--accent-red);
+      border-radius: 4px;
+      color: var(--accent-red);
       font-family: var(--font-code);
-      font-size: 13px;
+      font-size: 12px;
       white-space: pre-wrap;
     }
 
-    /* Engine Stats Footer Bar */
+    /* Metrics Bar */
     .metrics-bar {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      height: 80px;
+      gap: 12px;
+      height: 60px;
     }
 
     .metric-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      padding: 14px 18px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -509,15 +441,14 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       color: var(--text-muted);
-      font-weight: 600;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
 
     .metric-value {
-      font-family: var(--font-title);
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--accent-cyan);
+      font-family: var(--font-code);
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-main);
     }
   </style>
 </head>
@@ -525,13 +456,10 @@
 
   <header>
     <div class="brand">
-      <div class="logo-badge">BYODB</div>
-      <div class="brand-title">Relational Database Workbench</div>
+      <div class="brand-title">BYODB Workbench</div>
     </div>
     <div class="header-info">
-      <div class="status-badge">
-        <span class="status-dot"></span> B+Tree Engine Active
-      </div>
+      <div id="txBadge" class="status-badge">TX: Auto-Commit</div>
       <div id="dbPath" class="db-path">database.db</div>
     </div>
   </header>
@@ -539,11 +467,11 @@
   <div class="app-container">
     <aside>
       <div class="sidebar-header">
-        <span class="sidebar-title">Tables & Schemas</span>
-        <button class="btn-icon" title="Refresh Schema" onclick="loadSchema()">🔄</button>
+        <span class="sidebar-title">Tables</span>
+        <button class="btn-text" onclick="loadSchema()">Refresh</button>
       </div>
       <div class="schema-search-container">
-        <input type="text" id="schemaSearch" class="schema-search" placeholder="Filter tables or columns..." oninput="filterTables()">
+        <input type="text" id="schemaSearch" class="schema-search" placeholder="Filter tables..." oninput="filterTables()">
       </div>
       <div id="tableList" class="table-list">
         <!-- Loaded dynamically -->
@@ -553,48 +481,46 @@
     <main>
       <div class="card editor-card">
         <div class="card-header">
-          <div class="card-title">
-            <span>⚡</span> SQL Query Editor
-          </div>
+          <div class="card-title">SQL Query Editor</div>
           <div class="editor-actions">
             <select id="snippetSelect" class="snippet-select" onchange="insertSnippet(this.value)">
-              <option value="">-- Load Quick Snippet --</option>
-              <option value="create_ecom">1. Create E-Commerce Table</option>
-              <option value="insert_ecom">2. Insert Seed Products</option>
-              <option value="select_all">3. Select All Products</option>
-              <option value="range_float">4. Float Range Scan (Price > 30.0)</option>
-              <option value="count_query">5. Count Aggregation (COUNT(*))</option>
+              <option value="">Snippets</option>
+              <option value="create_ecom">Create Table</option>
+              <option value="insert_ecom">Insert Data</option>
+              <option value="select_all">Select All</option>
+              <option value="range_float">Range Scan</option>
+              <option value="count_query">Count Aggregation</option>
+              <option value="tx_demo">Transaction Test</option>
             </select>
-            <button class="btn-primary" onclick="runQuery()">
-              ▶ Run Query <span style="font-weight:normal; opacity:0.7; font-size:11px;">(Ctrl+Enter)</span>
-            </button>
+            <button class="btn-action" onclick="runQueryDirect('BEGIN;')">BEGIN</button>
+            <button class="btn-action" onclick="runQueryDirect('COMMIT;')">COMMIT</button>
+            <button class="btn-action" onclick="runQueryDirect('ROLLBACK;')">ROLLBACK</button>
+            <button class="btn-primary" onclick="runQuery()">Run (Ctrl+Enter)</button>
           </div>
         </div>
-        <textarea id="queryInput" class="query-textarea" placeholder="Type SQL query here (e.g., select * from people)..." spellcheck="false"></textarea>
+        <textarea id="queryInput" class="query-textarea" placeholder="Type SQL query here..." spellcheck="false"></textarea>
       </div>
 
       <div class="card results-card">
         <div class="card-header">
-          <div class="card-title">
-            <span>📊</span> Execution Output & Results
-          </div>
+          <div class="card-title">Execution Output</div>
           <div class="results-meta">
-            <span id="timePill" class="meta-pill" style="display:none;">⚡ 0.00 ms</span>
-            <span id="rowPill" class="meta-pill" style="display:none;">0 rows</span>
+            <span id="timePill" style="display:none;">0.00 ms</span>
+            <span id="rowPill" style="display:none;">0 rows</span>
           </div>
         </div>
         <div id="resultsBody" class="results-body">
-          <div class="empty-results">Execute a query above to display output results.</div>
+          <div class="empty-results">Execute a query to view results.</div>
         </div>
       </div>
 
       <div class="metrics-bar">
         <div class="metric-card">
-          <div class="metric-label">Database File Size</div>
+          <div class="metric-label">File Size</div>
           <div id="metricFileSize" class="metric-value">--</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Total Allocated Pages</div>
+          <div class="metric-label">Allocated Pages</div>
           <div id="metricPages" class="metric-value">--</div>
         </div>
         <div class="metric-card">
@@ -602,7 +528,7 @@
           <div class="metric-value">4096 B</div>
         </div>
         <div class="metric-card">
-          <div class="metric-label">Total Tables</div>
+          <div class="metric-label">Tables</div>
           <div id="metricTables" class="metric-value">--</div>
         </div>
       </div>
@@ -615,12 +541,30 @@
       insert_ecom: "insert into products (id, name, price, category) values\n    (1, 'Gaming Laptop', 1299.99, 'electronics'),\n    (2, 'Wireless Mouse', 24.50, 'electronics'),\n    (3, 'Mechanical Keyboard', 89.99, 'electronics'),\n    (4, 'Coffee Mug', 12.00, 'home');",
       select_all: "select id, name, price, category from products;",
       range_float: "select name, price from products index by price > 30.0;",
-      count_query: "select count(*) from products filter price > 20.0;"
+      count_query: "select count(*) from products filter price > 20.0;",
+      tx_demo: "BEGIN;\nINSERT INTO products (id, name, price, category) VALUES (99, 'Temporary Product', 9.99, 'test');\nROLLBACK;"
     };
 
     function insertSnippet(key) {
       if (snippets[key]) {
         document.getElementById('queryInput').value = snippets[key];
+      }
+    }
+
+    function updateTxStatus(inTx) {
+      const badge = document.getElementById('txBadge');
+      if (!badge) return;
+
+      if (inTx) {
+        badge.style.color = 'var(--accent-red)';
+        badge.style.background = 'rgba(239, 68, 68, 0.08)';
+        badge.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        badge.innerText = 'TX: Active (Uncommitted)';
+      } else {
+        badge.style.color = 'var(--accent-green)';
+        badge.style.background = 'rgba(34, 197, 94, 0.08)';
+        badge.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+        badge.innerText = 'TX: Auto-Commit';
       }
     }
 
@@ -639,6 +583,7 @@
         const data = await res.json();
         cachedTables = data.tables || [];
         document.getElementById('metricTables').innerText = cachedTables.length;
+        if (data.in_tx !== undefined) updateTxStatus(data.in_tx);
         filterTables();
       } catch (err) {
         console.error("Failed to load schema:", err);
@@ -660,7 +605,7 @@
       listEl.innerHTML = '';
 
       if (!tables || tables.length === 0) {
-        listEl.innerHTML = '<div style="padding: 16px; color: var(--text-muted); font-size:13px; text-align:center;">No tables found.</div>';
+        listEl.innerHTML = '<div style="padding: 16px; color: var(--text-muted); font-size:12px; text-align:center;">No tables found.</div>';
         return;
       }
 
@@ -690,9 +635,9 @@
           colsHtml += `
             <div class="col-item">
               <span>
-                ${isPk ? '<span class="col-pk" title="Primary Key">🔑</span> ' : ''}
-                ${isIdx ? '<span class="col-idx" title="Secondary Index">🔍</span> ' : ''}
-                <strong style="color:var(--text-main);">${col}</strong>
+                <span class="col-name">${col}</span>
+                ${isPk ? '<span class="col-tag">PK</span>' : ''}
+                ${isIdx ? '<span class="col-tag">IDX</span>' : ''}
               </span>
               <span class="col-type">${typeName}</span>
             </div>
@@ -702,20 +647,20 @@
         let idxListHtml = '';
         if (tableIndexes.length > 0) {
           let pkeyStr = tableIndexes[0].join(', ');
-          idxListHtml += `<div class="index-meta"><strong>PK:</strong> (${pkeyStr})</div>`;
+          idxListHtml += `<div class="index-meta">PK: (${pkeyStr})</div>`;
           tableIndexes.slice(1).forEach(idx => {
-            idxListHtml += `<div class="index-meta"><strong>IDX:</strong> (${idx.join(', ')})</div>`;
+            idxListHtml += `<div class="index-meta">IDX: (${idx.join(', ')})</div>`;
           });
         }
 
         item.innerHTML = `
           <div class="table-name-row">
             <div class="table-name-title" onclick="toggleTable('cols-${tableName}')">
-              <span id="arrow-cols-${tableName}" style="font-size:10px; display:inline-block; transition:transform 0.2s;">▼</span>
-              <span>📋 <strong>${tableName}</strong></span>
-              <span class="col-badge">${tableCols.length} cols</span>
+              <span id="arrow-cols-${tableName}" style="font-size:9px;">v</span>
+              <span>${tableName}</span>
+              <span class="col-badge">(${tableCols.length})</span>
             </div>
-            <button class="btn-xs" title="Query SELECT *" onclick="setQuery('select * from ${tableName};'); event.stopPropagation();">SELECT *</button>
+            <button class="btn-text" style="font-size:10px; padding:2px 6px;" onclick="setQuery('select * from ${tableName};'); event.stopPropagation();">SELECT</button>
           </div>
           <div class="col-list" id="cols-${tableName}">
             ${colsHtml}
@@ -732,14 +677,19 @@
       if (!el) return;
       if (el.style.display === 'none') {
         el.style.display = 'flex';
-        if (arrow) arrow.style.transform = 'rotate(0deg)';
+        if (arrow) arrow.innerText = 'v';
       } else {
         el.style.display = 'none';
-        if (arrow) arrow.style.transform = 'rotate(-90deg)';
+        if (arrow) arrow.innerText = '>';
       }
     }
 
     function setQuery(sql) {
+      document.getElementById('queryInput').value = sql;
+      runQuery();
+    }
+
+    function runQueryDirect(sql) {
       document.getElementById('queryInput').value = sql;
       runQuery();
     }
@@ -751,6 +701,7 @@
         document.getElementById('dbPath').innerText = stats.path || 'database.db';
         document.getElementById('metricFileSize').innerText = formatBytes(stats.fileSizeBytes || 0);
         document.getElementById('metricPages').innerText = stats.pageCount || 0;
+        if (stats.in_tx !== undefined) updateTxStatus(stats.in_tx);
       } catch (err) {
         console.error("Failed to load stats:", err);
       }
@@ -787,8 +738,9 @@
         const duration = (performance.now() - startTime).toFixed(2);
         const data = await res.json();
 
-        timePill.innerText = `⚡ ${duration} ms`;
+        timePill.innerText = `${duration} ms`;
         timePill.style.display = 'inline-block';
+        if (data.in_tx !== undefined) updateTxStatus(data.in_tx);
 
         if (data.error) {
           bodyEl.innerHTML = `<div class="error-box">Error: ${data.error}</div>`;
@@ -798,7 +750,7 @@
         if (data.affected !== undefined && data.affected >= 0 && (!data.rows || data.rows.length === 0)) {
           rowPill.innerText = `${data.affected} row(s) affected`;
           rowPill.style.display = 'inline-block';
-          bodyEl.innerHTML = `<div class="empty-results" style="color: var(--accent-emerald);">Success: ${data.affected} row(s) affected.</div>`;
+          bodyEl.innerHTML = `<div class="empty-results" style="color: var(--accent-green);">Statement executed: ${data.affected} row(s) affected.</div>`;
           loadSchema();
           loadStats();
           return;
